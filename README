@@ -1,0 +1,50 @@
+# Parallel Rendering of the Mandelbrot Set
+
+This is an implementation of the famous
+[Mandelbrot set](http://en.wikipedia.org/wiki/Mandelbrot_set)  renderer which is
+implemented  in ANSI-C  incorporating the  pthread  and the  SDL libraries.  The
+object  is to  achieve the  maximum possible  performance on  modern multi  core
+CPU's. The  program runs on Unixiod  computing platforms such as  Linux, BSD and
+Mac OS X.
+
+
+## Build Dependencies
+
+Beside essential build packages, the  programs requires a development version of
+the  libsdl2  library to  be  installed  (package libsd2-dev  on  debian/Ubuntu,
+libSDL2-devel on OpenSuSE, SDL on the  Mac). In exmple use the following command
+to install this library via Homebrew on the Macintosh platform:
+
+    brew install SDL
+
+
+## Download and Build
+
+Download and compile the application via the following shell commands:
+
+    git clone git://github/linneman/mandelbrot-native.git
+    autoreconf -i
+    ./configure
+    make
+    sudo make install
+
+
+## Usage
+
+The program renders the mandelbrot set by  default with 50 threads and a maximum
+iteration depth  of 1000 steps  within an graphical  window. Start the program
+by entering
+
+    parmandel
+
+within a terminal. Drag with the left mouse key into an area to zoom in. Use the
+left mouse botton  or a two finger tap  on the mac to zoom out  to the previosly
+selected area.
+
+
+## Licence
+
+This implementation code stands under the terms of the
+[GNU General Public Licence](http://www.gnu.org/licenses/gpl.html).
+
+March 2019, Otto Linnemann
