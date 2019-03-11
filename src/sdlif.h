@@ -24,11 +24,14 @@ typedef double (* t_color_map_cb) (
 
 
 typedef struct {
-  double                center;
-  double                shift;
   double                alpha;
-  double                beta;
+  double                cutoff;
 } t_exp_color_params;
+
+
+typedef struct {
+  double                alpha;
+} t_squared_color_params;
 
 
 typedef struct {
@@ -37,6 +40,7 @@ typedef struct {
   pthread_t             gui_thread;
   t_parman_threads*     p_threads;
   int                   nr_threads;
+  int                   iterations;
   t_color_map_cb        p_color_map_cb;
   void*                 p_color_params;
   int                   done;
@@ -52,7 +56,7 @@ typedef struct {
 
 
 void release_gui( t_gui* p );
-t_gui* create_gui( const int nr_threads );
+t_gui* create_gui( const int nr_threads, const int iterations );
 
 
 #ifdef __cplusplus

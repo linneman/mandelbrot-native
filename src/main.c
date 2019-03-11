@@ -11,14 +11,15 @@
 #include <log.h>
 #include <getopt.h>
 
-#define MAX_THREADS 1000
+#define MAX_THREADS     1000
+#define MAX_ITERATIONS  1000000
 
-static int start_gui( const int nr_threads )
+static int start_gui( const int nr_threads, const int iterations )
 {
   t_gui* p_gui;
   int retcode, i, j, all_done;
 
-  p_gui = create_gui( nr_threads );
+  p_gui = create_gui( nr_threads, iterations );
   if( p_gui == NULL ) {
     return -1;
   }
@@ -47,6 +48,8 @@ static void help( char* name )
   printf("Copyright 2019 GNU General Public Licence. All rights reserved\n\n");
   printf("Invocation: %s [ options ]\n\n", name );
   printf("Options:\n");
+  printf("--iterations\n-i\n");
+  printf("\tMaximum number of iterations\n\n");
   printf("--threads\n-t\n");
   printf("\tNumber of processing threads\n\n");
   printf("--nogui\n-n\n");
@@ -63,12 +66,14 @@ int main(int argc, char* argv[])
   {
     { "help", no_argument, NULL, 'h' },
     { "threads", required_argument, NULL, 't' },
+    { "iterations", required_argument, NULL, 'i' },
     { "nogui", no_argument, NULL, 'n' },
   };
   int nr_threads = 16;
+  int iterations = 5000;
   int headless = 0;
 
-  while( ( optchar = getopt_long( argc, argv, "hnt:", long_options, &optindex ) ) != -1 )
+  while( ( optchar = getopt_long( argc, argv, "hnt:i:", long_options, &optindex ) ) != -1 )
   {
     switch( optchar )
     {
@@ -81,6 +86,14 @@ int main(int argc, char* argv[])
       nr_threads = atoi( optarg );
       if( nr_threads < 1 || nr_threads >= MAX_THREADS ) {
         log_error("number of threads must be in range [%d:%d]\n", 1, MAX_THREADS );
+        return -1;
+      }
+      break;
+
+    case 'i':
+      iterations = atoi( optarg );
+      if( iterations < 20 || iterations >= MAX_ITERATIONS ) {
+        log_error("number of iterations must be in range [%d:%d]\n", 1, MAX_ITERATIONS );
         return -1;
       }
       break;
@@ -98,5 +111,5 @@ int main(int argc, char* argv[])
   if( headless )
     return start_head_less( nr_threads );
   else
-    return start_gui( nr_threads );
+    return start_gui( nr_threads, iterations );
 }
