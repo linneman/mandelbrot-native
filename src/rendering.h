@@ -17,10 +17,10 @@ extern "C" {
 typedef struct {
   int                   res_x;;
   int                   res_y;;
-  double                init_x;
-  double                init_y;
-  double                step_x;
-  double                step_y;
+  long double           init_x;
+  long double           init_y;
+  long double           step_x;
+  long double           step_y;
   int                   iterations;
   int*                  grid;
 } t_parman_data;
@@ -50,10 +50,10 @@ typedef struct {
 void release_parman_data( t_parman_data* p );
 t_parman_data* create_parman_data( const int res_x,
                                  const int res_y,
-                                 const double min_x,
-                                 const double min_y,
-                                 const double width,
-                                 const double height,
+                                 const long double min_x,
+                                 const long double min_y,
+                                 const long double width,
+                                 const long double height,
                                  const int iterations );
 void print_mandel( const t_parman_data* p );
 void release_rendering( t_parman_threads* p );
@@ -63,10 +63,10 @@ t_parman_data* get_image_data( t_parman_threads* p_parman_threads );
 void release_image( t_parman_threads* p_parman_threads );
 t_parman_threads* render_image( const int res_x,
                                 const int res_y,
-                                const double min_x,
-                                const double min_y,
-                                const double width,
-                                const double height,
+                                const long double min_x,
+                                const long double min_y,
+                                const long double width,
+                                const long double height,
                                 const int iterations,
                                 const int nr_threads );
 

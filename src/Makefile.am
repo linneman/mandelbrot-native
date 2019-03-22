@@ -6,6 +6,10 @@ parmandel_SOURCES= \
 	console.h \
 	rendering.c \
 	rendering.h \
+	colormap.c \
+	colormap.h \
+	cubic_interpol.c \
+	cubic_interpol.h \
 	log.c \
 	log.h \
 	main.c

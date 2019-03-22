@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
     { "iterations", required_argument, NULL, 'i' },
     { "nogui", no_argument, NULL, 'n' },
   };
-  int nr_threads = 16;
-  int iterations = 5000;
+  int nr_threads = 200;
+  int iterations = 1000;
   int headless = 0;
 
   while( ( optchar = getopt_long( argc, argv, "hnt:i:", long_options, &optindex ) ) != -1 )
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
     case 'i':
       iterations = atoi( optarg );
       if( iterations < 20 || iterations >= MAX_ITERATIONS ) {
-        log_error("number of iterations must be in range [%d:%d]\n", 1, MAX_ITERATIONS );
+        log_error("number of iterations must be in range [%d:%d]\n", 20, MAX_ITERATIONS );
         return -1;
       }
       break;

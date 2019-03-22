@@ -27,10 +27,10 @@ void release_parman_data( t_parman_data* p )
 
 t_parman_data* create_parman_data( const int res_x,
                                    const int res_y,
-                                   const double min_x,
-                                   const double min_y,
-                                   const double width,
-                                   const double height,
+                                   const long double min_x,
+                                   const long double min_y,
+                                   const long double width,
+                                   const long double height,
                                    const int iterations )
 {
   t_parman_data* p = malloc( sizeof( t_parman_data ) );
@@ -54,8 +54,8 @@ t_parman_data* create_parman_data( const int res_x,
 
   p->init_x = min_x;
   p->init_y = min_y;
-  p->step_x = width / (double)res_x;
-  p->step_y = height / (double)res_y;
+  p->step_x = width / (long double)res_x;
+  p->step_y = height / (long double)res_y;
   p->iterations = iterations;
 
   return p;
@@ -71,7 +71,7 @@ static void* render_mandel( void* pa )
   int idx_x = start_idx % p_data->res_x;
   int idx_y = start_idx / p_data->res_x;
   int i, iter;
-  double z, zi ,c, ci, temp;
+  long double z, zi ,c, ci, temp;
   const int max_iter = p_data->iterations;
   long invoc_cnt = 0L;
   static int thread_nr = 0;
@@ -218,10 +218,10 @@ void release_image( t_parman_threads* p_parman_threads )
 
 t_parman_threads* render_image( const int res_x,
                                 const int res_y,
-                                const double min_x,
-                                const double min_y,
-                                const double width,
-                                const double height,
+                                const long double min_x,
+                                const long double min_y,
+                                const long double width,
+                                const long double height,
                                 const int iterations,
                                 const int nr_threads )
 {

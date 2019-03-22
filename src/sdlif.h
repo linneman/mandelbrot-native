@@ -11,27 +11,11 @@
 #include <SDL.h>
 #include <SDL_events.h>
 #include <rendering.h>
+#include <colormap.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-typedef double (* t_color_map_cb) (
-  const void*  p_color_map_params,
-  const double iteration,
-  const double max_iterations );
-
-
-typedef struct {
-  double                alpha;
-  double                cutoff;
-} t_exp_color_params;
-
-
-typedef struct {
-  double                alpha;
-} t_squared_color_params;
 
 
 typedef struct {
@@ -41,8 +25,7 @@ typedef struct {
   t_parman_threads*     p_threads;
   int                   nr_threads;
   int                   iterations;
-  t_color_map_cb        p_color_map_cb;
-  void*                 p_color_params;
+  t_rgb*                p_rgb;
   int                   done;
 } t_gui;
 

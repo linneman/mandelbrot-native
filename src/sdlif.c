@@ -12,125 +12,22 @@
 #include <math.h>
 
 
-#define MAX(x,y)  ((x)>(y) ? (x) : (y))
-#define SQUARE(x) ((x)*(x))
-
-
-static double exp_color_density_map(
-  const void* p_color_params,
-  const double iteration,
-  const double max_iterations )
-{
-  const t_exp_color_params* p_exp_color_params = (t_exp_color_params*)p_color_params;
-  double x, y;
-
-  x = (double)iteration / (double)max_iterations;
-
-  /* we are using actually a logistic sigmoid function */
-  x = 2.0 * SQUARE(x - 0.5) ;
-  y = 1.0 / (1.0 + exp( - p_exp_color_params->alpha * x ) );  /* y - > [ 0.5 .. 1] */
-  y = 1.0 - 2.0 * ( y - 0.5 );
-  y = (y <= p_exp_color_params->cutoff) ? 0.0 : y;
-
-  return y;
-}
-
-
-static const int init_exp_color_density_map( t_gui* p )
-{
-  t_exp_color_params* p_exp_color_params;
-  double cutoff;
-
-  p_exp_color_params = malloc( sizeof(t_exp_color_params) );
-  if( p_exp_color_params == NULL ) {
-    log_error("%s, %d: out of memory error!\n", __func__, __LINE__ );
-    return -1;
-  }
-
-  p_exp_color_params->alpha = 25;
-
-  cutoff = 1.0 / (1.0 + exp( - p_exp_color_params->alpha * 0.5 ) );
-  cutoff = 1.0 - 2.0 * (cutoff - 0.5);
-  p_exp_color_params->cutoff = cutoff;
-
-  p->p_color_map_cb = exp_color_density_map;
-  p->p_color_params = (t_exp_color_params *)p_exp_color_params;
-
-  return 0;
-}
-
-
-static double squared_color_density_map(
-  const void* p_color_params,
-  const double iteration,
-  const double max_iterations )
-{
-  const t_squared_color_params* p_squared_color_params = (t_squared_color_params*)p_color_params;
-  double x, y;
-
-  x = (double)iteration / (double)max_iterations;
-  y = SQUARE(p_squared_color_params->alpha) - SQUARE(p_squared_color_params->alpha * 2.0 * (x - 0.5));
-  y /= SQUARE(p_squared_color_params->alpha);
-
-  return y;
-}
-
-
-static const int init_squared_color_density_map( t_gui* p )
-{
-  t_squared_color_params* p_squared_color_params;
-
-  p_squared_color_params = malloc( sizeof(t_squared_color_params) );
-  if( p_squared_color_params == NULL ) {
-    log_error("%s, %d: out of memory error!\n", __func__, __LINE__ );
-    return -1;
-  }
-  p_squared_color_params->alpha = 5.0;
-  p->p_color_map_cb = squared_color_density_map;
-  p->p_color_params = (t_squared_color_params *)p_squared_color_params;
-
-  return 0;
-}
-
-
-static void iteration2rgb(
-  t_color_map_cb p_color_map_cp,
-  const void* p_color_params,
-  const double iteration,
-  const double max_iterations,
-  int* p_r, int *p_g, int *p_b )
-{
-  const int max_intensity = 0xFFFFFF;
-  const double scale =  max_intensity / max_iterations;
-  const double iteration_e = (*p_color_map_cp)( p_color_params, iteration, max_iterations );
-  // const int intensity = (int)( scale * iteration_e);
-  const int intensity = (int)( max_intensity * iteration_e);
-
-  *p_r = 0xff & (intensity >> 16);
-  *p_g = 0xff & (intensity >> 8);
-  *p_b = 0xff & intensity;
-}
-
-
 static void plot_mandel( SDL_Renderer* renderer, const t_gui *p_gui )
 {
   const t_parman_data* p = get_image_data( p_gui->p_threads );
-  const int max_color_idx = 0xFFFFFF;
-  int r, g, b;
-  int x, y;
+  int x, y, color_index;
   int max_grid_val = 0;
+  t_rgb* p_rgb;
 
   for( y = 0; y < p->res_y; ++y ) {
     for( x = 0; x < p->res_x; ++x ) {
-      iteration2rgb( p_gui->p_color_map_cb, p_gui->p_color_params,
-                     p->grid[ y * p->res_x + x], p->iterations, &r, &g, &b );
-      SDL_SetRenderDrawColor(renderer, r, g, b, SDL_ALPHA_OPAQUE);
+      color_index = p->grid[ y * p->res_x + x];
+      p_rgb = & p_gui->p_rgb[ color_index ];
+
+      SDL_SetRenderDrawColor(renderer, p_rgb->r, p_rgb->g, p_rgb->b, SDL_ALPHA_OPAQUE);
       SDL_RenderDrawPoint( renderer, x, p->res_y - y );
     }
   }
-
-  iteration2rgb( p_gui->p_color_map_cb, p_gui->p_color_params,
-                 p->iterations, p->iterations, &r, &g, &b );
 }
 
 
@@ -149,7 +46,7 @@ static void* gui_thread( void* _p )
   const int size_undo_stack = 100;
   t_coord undo_stack[size_undo_stack];
   int top_undo_stack = 0;
-  double upd_min_x, upd_min_y, upd_width, upd_height;
+  long double upd_min_x, upd_min_y, upd_width, upd_height;
 
   if( SDL_CreateWindowAndRenderer( res_x, res_y, SDL_WINDOW_RESIZABLE, & p->window, & p->renderer) != 0) {
     log_error("%s,%d: could not initialize window and renderer error: %s!\n", __func__, __LINE__, SDL_GetError() );
@@ -320,7 +217,7 @@ static void* gui_thread( void* _p )
 
 void release_gui( t_gui* p )
 {
-  free( p->p_color_params );
+  release_colormap( p->p_rgb );
   free( p );
 }
 
@@ -345,12 +242,9 @@ t_gui* create_gui( const int nr_threads, const int iterations )
   p->nr_threads = nr_threads;
   p->iterations = iterations;
 
-  if( exp_color_map )
-    retcode = init_exp_color_density_map( p );
-  else
-    retcode = init_squared_color_density_map( p );
-
-  if( retcode ) {
+  p->p_rgb = create_default_colormap( iterations + 1 );
+  if( p->p_rgb == NULL ) {
+    log_error("%s, %d: out of memory error!\n", __func__, __LINE__ );
     free( p );
     return NULL;
   }
@@ -366,7 +260,7 @@ t_gui* create_gui( const int nr_threads, const int iterations )
 
   if( retcode ) {
     log_error( "%s, %d: could not create gui thread error!\n", __func__, __LINE__ );
-    free( p->p_color_params );
+    release_colormap( p->p_rgb );
     free( p );
     return NULL;
   }
